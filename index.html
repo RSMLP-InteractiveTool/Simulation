@@ -1,0 +1,280 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Policy Trade-Off Simulator</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --primary: #2563eb;
+            --safe: #10b981;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        h2 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+
+        .control-group {
+            margin: 25px 0;
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .speed-display {
+            font-size: 1.25rem;
+            color: var(--primary);
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #cbd5e1;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            transition: background 0.15s ease;
+        }
+
+        .price-tag {
+            background: var(--safe);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 25px;
+            transition: background-color 0.3s ease;
+        }
+
+        .price-tag.critical {
+            background: var(--danger);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.9; }
+            100% { opacity: 1; }
+        }
+
+        .metric-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background: #f8fafc;
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-bg {
+            background: #e2e8f0;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--primary);
+            transition: width 0.2s ease, background-color 0.2s ease;
+        }
+
+        .footer-note {
+            font-size: 0.85rem;
+            color: #64748b;
+            margin-top: 25px;
+            text-align: center;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Policy Trade-Off Simulator</h2>
+    
+    <div id="politicalPriceTag" class="price-tag">
+        POLITICAL RISK ASSESSMENT: MANAGEABLE
+    </div>
+
+    <div class="control-group">
+        <label for="speedRange">
+            <span>Proposed Urban Speed Limit</span>
+            <span id="speedValue" class="speed-display">30 km/h</span>
+        </label>
+        <input type="range" id="speedRange" min="30" max="60" value="30" step="5">
+    </div>
+
+    <!-- Metric 1 -->
+    <div class="metric-card">
+        <div class="metric-header">
+            <span>Average Commute Time Saved</span>
+            <span id="timeSavedLabel">0.0 mins</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div id="timeBar" class="progress-bar-fill" style="background-color: #3b82f6;"></div>
+        </div>
+    </div>
+
+    <!-- Metric 2 -->
+    <div class="metric-card">
+        <div class="metric-header">
+            <span>Total Stopping Distance</span>
+            <span id="distanceLabel">19.0 meters</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div id="distanceBar" class="progress-bar-fill" style="background-color: #f59e0b;"></div>
+        </div>
+    </div>
+
+    <!-- Metric 3 -->
+    <div class="metric-card">
+        <div class="metric-header">
+            <span>Pedestrian Fatality Risk</span>
+            <span id="fatalityLabel">10%</span>
+        </div>
+        <div class="progress-bar-bg">
+            <div id="fatalityBar" class="progress-bar-fill"></div>
+        </div>
+    </div>
+
+    <div class="footer-note">
+        *Stopping distances based on a 1.5s perception-reaction time + dry braking coefficient ($0.7$). Fatality curves based on real-world urban traffic impact studies.
+    </div>
+</div>
+
+<script>
+    const speedRange = document.getElementById('speedRange');
+    const speedValue = document.getElementById('speedValue');
+    const politicalPriceTag = document.getElementById('politicalPriceTag');
+    
+    const timeSavedLabel = document.getElementById('timeSavedLabel');
+    const timeBar = document.getElementById('timeBar');
+    
+    const distanceLabel = document.getElementById('distanceLabel');
+    const distanceBar = document.getElementById('distanceBar');
+    
+    const fatalityLabel = document.getElementById('fatalityLabel');
+    const fatalityBar = document.getElementById('fatalityBar');
+
+    function updateSimulation() {
+        const speed = parseInt(speedRange.value);
+        
+        // 1. Update Input Label
+        speedValue.innerText = `${speed} km/h`;
+        
+        // 2. Calculate Commute Time Saved (Linear approximation for a 10km urban trip)
+        // At 30km/h = 20 mins. At 60km/h = 10 mins. Max savings = 10 mins.
+        const time30 = 10 / 30;
+        const timeCurrent = 10 / speed;
+        const savingsHours = time30 - timeCurrent;
+        const savingsMinutes = Math.max(0, savingsHours * 60);
+        timeSavedLabel.innerText = `${savingsMinutes.toFixed(1)} mins`;
+        
+        // Bar relative to max possible savings (10 mins at 60km/h)
+        const timePercentage = (savingsMinutes / 10) * 100;
+        timeBar.style.width = `${timePercentage}%`;
+
+        // 3. Calculate Total Stopping Distance (Reaction distance + Braking distance)
+        // d = (v * t) + (v^2 / 2ug)
+        const vMs = speed / 3.6; // convert to m/s
+        const reactionDist = vMs * 1.5; // 1.5s reaction time
+        const brakingDist = Math.pow(vMs, 2) / (2 * 0.7 * 9.81); // 0.7 friction coefficient
+        const totalDist = reactionDist + brakingDist;
+        distanceLabel.innerText = `${totalDist.toFixed(1)} meters`;
+        
+        // Scale bar relative to maximum distance at 60km/h (~45m)
+        const maxDist = 45;
+        const distPercentage = Math.min(100, (totalDist / maxDist) * 100);
+        distanceBar.style.width = `${distPercentage}%`;
+
+        // 4. Pedestrian Fatality Risk (Exponential spike based on standard Wramborg power model)
+        let fatalityRisk = 10;
+        if (speed === 30) fatalityRisk = 10;
+        else if (speed === 35) fatalityRisk = 15;
+        else if (speed === 40) fatalityRisk = 30;
+        else if (speed === 45) fatalityRisk = 55;
+        else if (speed === 50) fatalityRisk = 80;
+        else if (speed === 55) fatalityRisk = 92;
+        else if (speed === 60) fatalityRisk = 98;
+
+        fatalityLabel.innerText = `${fatalityRisk}%`;
+        fatalityBar.style.width = `${fatalityRisk}%`;
+
+        // Color logic for fatality risk
+        if (fatalityRisk < 20) {
+            fatalityBar.style.backgroundColor = '#10b981'; // Green
+            politicalPriceTag.innerText = 'POLITICAL RISK ASSESSMENT: SAFE';
+            politicalPriceTag.classList.remove('critical');
+        } else if (fatalityRisk >= 20 && fatalityRisk < 60) {
+            fatalityBar.style.backgroundColor = '#f59e0b'; // Orange
+            politicalPriceTag.innerText = 'POLITICAL RISK ASSESSMENT: WARNING';
+            politicalPriceTag.classList.remove('critical');
+        } else {
+            fatalityBar.style.backgroundColor = '#ef4444'; // Red
+            politicalPriceTag.innerText = 'CRITICAL RISK: UNACCEPTABLE CASUALTIES';
+            politicalPriceTag.classList.add('critical');
+        }
+    }
+
+    speedRange.addEventListener('input', updateSimulation);
+    
+    // Run once on load to initialize metrics
+    updateSimulation();
+</script>
+
+</body>
+</html>
